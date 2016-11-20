@@ -1,22 +1,19 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
-	"time"
+	"github.com/gorilla/mux"
 )
 
 const (
-	port = ":8080"
+	port = ":8081"
 )
 
-func testHandler(w http.ResponseWriter, r *http.Request) {
-
-}
-
-func serveDynamic(w http.ResponseWriter, r *http.Request){
-	response := "The time is now " + time.Now().String();
-	fmt.Fprintln(w, response);
+func pageHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r);
+	pageID := vars["id"];
+	fileName := "public/files/" + pageID + ".html";
+	http.ServeFile(w,r,fileName);
 }
 
 func serveStatic(w http.ResponseWriter, r *http.Request){
@@ -24,15 +21,15 @@ func serveStatic(w http.ResponseWriter, r *http.Request){
 	http.ServeFile(w,r,"public/json/whoami.json");
 }
 
-func serveError(w http.ResponseWriter, r *http.Request){
-	fmt.Println("There's no way way I'll work !");
-}
 
 func main() {
+	rtr := mux.NewRouter();
+	rtr.HandleFunc("/pages/{id:[0-9]+}",pageHandler);
+	rtr.HandleFunc("/homepage",pageHandler);
+	rtr.HandleFunc("/contanct",pageHandler);
 
-	http.HandleFunc("/test", testHandler)
+	http.Handle("/",rtr);
+
 	http.HandleFunc("/whoami",serveStatic);
-	http.HandleFunc("/",serveDynamic);
-	http.HandleFunc("/error",serveError)
 	http.ListenAndServe(port,nil);
 }
