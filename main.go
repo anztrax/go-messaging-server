@@ -3,6 +3,7 @@ package main
 import (
 	"net/http"
 	"github.com/gorilla/mux"
+	"os"
 )
 
 const (
@@ -13,6 +14,13 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r);
 	pageID := vars["id"];
 	fileName := "public/files/" + pageID + ".html";
+
+	//NOTE : why we need OS stat ? because 404 is a situation based on not found a file
+	_, err := os.Stat(fileName);
+	if err != nil{
+		fileName = "public/files/404.html";
+	}
+
 	http.ServeFile(w,r,fileName);
 }
 
