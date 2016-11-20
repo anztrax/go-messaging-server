@@ -1,0 +1,3 @@
+package: github.com/anztrax/messaging-server
+import:
+- package: github.com/gorilla/mux
