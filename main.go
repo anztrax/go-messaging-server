@@ -28,13 +28,13 @@ var database *sql.DB
 
 func pageHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r);
-	pageID := vars["id"];
+	guID := vars["guID"];
 
 	thisPage := Page{};
 
-	err := database.QueryRow("SELECT page_title,page_content,page_date FROM pages WHERE id=?", pageID).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date);
+	err := database.QueryRow("SELECT page_title,page_content,page_date FROM pages WHERE page_guid=?", guID).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date);
 	if err != nil{
-		log.Println("couldn't get page with id : ",pageID);
+		log.Println("couldn't get page with id : ",guID);
 		log.Println(err)
 	}
 
@@ -65,7 +65,7 @@ func main() {
 	connectToDB();
 
 	rtr := mux.NewRouter();
-	rtr.HandleFunc("/pages/{id:[0-9]+}",pageHandler);
+	rtr.HandleFunc("/pages/{guID:[0-9a-zA\\-]+}",pageHandler);
 	http.Handle("/",rtr);
 
 	http.HandleFunc("/whoami",serveStatic);
