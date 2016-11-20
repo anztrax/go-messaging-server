@@ -7,6 +7,8 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
+	"html/template"
+	"os"
 )
 
 const (
@@ -31,15 +33,22 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 	guID := vars["guID"];
 
 	thisPage := Page{};
+	fmt.Println("guID :",guID);
+	currWd , _ := os.Getwd();
+	fmt.Println("current working directory : ",currWd);
 
 	err := database.QueryRow("SELECT page_title,page_content,page_date FROM pages WHERE page_guid=?", guID).Scan(&thisPage.Title, &thisPage.Content, &thisPage.Date);
 	if err != nil{
+		http.Error(w, http.StatusText(404), http.StatusNotFound);
 		log.Println("couldn't get page with id : ",guID);
-		log.Println(err)
+		log.Println(err);
+		return;
 	}
 
-	html := `<html><head><title>` + thisPage.Title + `</title></head><body><h1>` + thisPage.Title + `</h1><div>` + thisPage.Content + `</div></body></html>`;
-	fmt.Fprintln(w,html);
+	//NOTE : template directory is absolute to project root
+	currTmplDir := "src/github.com/anztrax/messaging-server/public/templates/blog.html";
+	t , _ := template.ParseFiles(currTmplDir);
+	t.Execute(w,thisPage);
 }
 
 func serveStatic(w http.ResponseWriter, r *http.Request){
